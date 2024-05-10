@@ -1,0 +1,2 @@
+class CredentialsFileNotFound(Exception):
+    pass

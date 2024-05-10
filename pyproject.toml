@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "gmail-cli"
+version = "0.1.0"
+description = "A simple gmail cli to list and automate gmail tasks"
+authors = ["Leo Varghese <leomv3@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+google-auth = "^2.29.0"
+google-auth-oauthlib = "^1.2.0"
+google-auth-httplib2 = "^0.2.0"
+google-api-python-client = "^2.128.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
