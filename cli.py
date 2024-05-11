@@ -7,24 +7,49 @@ from gmail_cli.utils import tabulate_emails, write_emails_to_csv
 
 
 def main():
-    parser = ArgumentParser(description='Automate Gmail processing')
+    parser = ArgumentParser(description='Automate gmail processing')
     subparsers = parser.add_subparsers(dest='command')
 
-    list_parser = subparsers.add_parser('list', help='List all the emails')
-    list_parser.add_argument('--db-path', type=str, default='', help='Path to the database file')
-    list_parser.add_argument('--table-name', type=str, default='', help='Name of the table in the database')
-    list_parser.add_argument('--credentials-file-path', type=str, help='Path to the credentials file')
-    list_parser.add_argument('--token-file-path', type=str, default='', help='Path to the token file')
-    list_parser.add_argument('--write-to-csv-path', type=str, default='', help='Path to write emails to a CSV file')
-    list_parser.add_argument('--force-retrieve', action='store_true', help='Force retrieve emails from Gmail')
+    list_parser = subparsers.add_parser(
+        'list', help='List all the emails')
+    list_parser.add_argument(
+        '--db-path',
+        type=str, default='', help='Path to the database file')
+    list_parser.add_argument(
+        '--table-name',
+        type=str, default='', help='Name of the table in the database')
+    list_parser.add_argument(
+        '--credentials-file-path',
+        type=str, help='Path to the credentials file')
+    list_parser.add_argument(
+        '--token-file-path',
+        type=str, default='', help='Path to the token file')
+    list_parser.add_argument(
+        '--write-to-csv-path',
+        type=str, default='', help='Path to write emails to a CSV file')
+    list_parser.add_argument(
+        '--force-retrieve',
+        action='store_true', help='Force retrieve emails from Gmail')
 
-    automate_parser = subparsers.add_parser('automate', help='Automate email processing')
-    automate_parser.add_argument('schema', type=str, help='Path to the schema file')
-    automate_parser.add_argument('--db-path', type=str, default='', help='Path to the database file')
-    automate_parser.add_argument('--table-name', type=str, default='', help='Name of the table in the database')
-    automate_parser.add_argument('--credentials-file-path', type=str, default='', help='Path to the credentials file')
-    automate_parser.add_argument('--token-file-path', type=str, default='', help='Path to the token file')
-    automate_parser.add_argument('--force-retrieve', action='store_true', help='Force retrieve emails from Gmail')
+    automate_parser = subparsers.add_parser(
+        'automate', help='Automate email processing')
+    automate_parser.add_argument(
+        'schema', type=str, help='Path to the schema file')
+    automate_parser.add_argument(
+        '--db-path',
+        type=str, default='', help='Path to the database file')
+    automate_parser.add_argument(
+        '--table-name',
+        type=str, default='', help='Name of the table in the database')
+    automate_parser.add_argument(
+        '--credentials-file-path',
+        type=str, default='', help='Path to the credentials file')
+    automate_parser.add_argument(
+        '--token-file-path',
+        type=str, default='', help='Path to the token file')
+    automate_parser.add_argument(
+        '--force-retrieve',
+        action='store_true', help='Force retrieve emails from Gmail')
     args = parser.parse_args()
 
     if args.command not in ['list', 'automate']:

@@ -1,6 +1,7 @@
 import csv
 from tabulate import tabulate
 
+
 def tabulate_emails(emails):
     '''
     Print the emails in a tabular format.

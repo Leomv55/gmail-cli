@@ -13,7 +13,10 @@ class GmailClient:
     A client to interact with the Gmail API.
     '''
     def __init__(self, credential_file_path='', token_file_path=''):
-        self.credential_file_path = credential_file_path or CREDENTIALS_FILE_PATH
+        self.credential_file_path = (
+            credential_file_path or
+            CREDENTIALS_FILE_PATH
+        )
         self.token_file_path = token_file_path or TOKEN_FILE_PATH
 
     def authenticate(self):
@@ -71,13 +74,32 @@ class GmailClient:
             emails = []
             for message in messages:
                 message_id = message['id']
-                msg = service.users().messages().get(userId='me', id=message_id).execute()
+                msg = service.users().messages().get(
+                    userId='me',
+                    id=message_id
+                ).execute()
                 payload = msg['payload']
                 headers = payload.get('headers', [])
-                subject = next((header['value'] for header in headers if header['name'] == 'Subject'), None)
-                date = next((header['value'] for header in headers if header['name'] == 'Date'), None)
-                sender = next((header['value'] for header in headers if header['name'] == 'From'), None)
-                recipient = next((header['value'] for header in headers if header['name'] == 'To'), None)
+                subject = next(
+                    (
+                        header['value'] for header in headers
+                        if header['name'] == 'Subject'
+                    ), None)
+                date = next(
+                    (
+                        header['value'] for header in headers
+                        if header['name'] == 'Date'
+                    ), None)
+                sender = next(
+                    (
+                        header['value'] for header in headers
+                        if header['name'] == 'From'
+                    ), None)
+                recipient = next(
+                    (
+                        header['value'] for header in headers
+                        if header['name'] == 'To'
+                    ), None)
                 snippet = msg.get('snippet', '')
 
                 email_info = {

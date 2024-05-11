@@ -30,7 +30,8 @@ class EmailAutomation:
         '''
         Fetch emails from Gmail and insert them into the database.
         Args:
-            force (bool): If True, fetch emails from Gmail and insert them into the database.
+            force (bool): If True, fetch emails from Gmail and insert them
+            into the database.
         '''
         if force:
             emails = self.gmail_client.fetch_emails()
@@ -42,7 +43,8 @@ class EmailAutomation:
         '''
         Start the email automation process.
         Args:
-            force_retrieve (bool): If True, fetch emails from Gmail and insert them into the database.
+            force_retrieve (bool): If True, fetch emails from Gmail and
+            insert them into the database.
         '''
         rules = self.schema.validate()
         emails = self.retrieve_emails(force=force_retrieve)
@@ -119,7 +121,12 @@ class EmailAutomation:
             email_address = match.group(1)
         return self.match_string_type(email_address, operator, value)
 
-    def match_string_type(self, field_value: str, operator: str, value: str) -> bool:
+    def match_string_type(
+        self,
+        field_value: str,
+        operator: str,
+        value: str
+    ) -> bool:
         '''
         Match string type condition with the email.
         '''
@@ -134,7 +141,12 @@ class EmailAutomation:
         else:
             raise ValueError('Invalid operator')
 
-    def match_datetime_type(self, field_value: datetime, operator: str, value: datetime) -> bool:
+    def match_datetime_type(
+        self,
+        field_value: datetime,
+        operator: str,
+        value: datetime
+    ) -> bool:
         '''
         Match datetime type condition with the email.
         '''
@@ -144,9 +156,17 @@ class EmailAutomation:
         elif operator == 'neq':
             return field_value.date() != value.date()
         elif operator == 'gt':
-            return field_value > datetime.now().astimezone(server_timezone) - timedelta(days=value)
+            request_date = (
+                datetime.now().astimezone(server_timezone) -
+                timedelta(days=value)
+            )
+            return field_value > request_date
         elif operator == 'lt':
-            return field_value < datetime.now().astimezone(server_timezone) + timedelta(days=value)
+            request_date = (
+                datetime.now().astimezone(server_timezone) -
+                timedelta(days=value)
+            )
+            return field_value < request_date
         else:
             raise ValueError('Invalid operator')
 
@@ -167,6 +187,7 @@ class EmailAutomation:
         elif action_type == 'mark_as_unread':
             self.gmail_client.mark_as_unread(email['message_id'])
         elif action_type == 'move_to_mailbox':
-            self.gmail_client.move_to_mailbox(email['message_id'], action['mailbox'])
+            self.gmail_client.move_to_mailbox(
+                email['message_id'], action['mailbox'])
         else:
             raise ValueError('Invalid action type')

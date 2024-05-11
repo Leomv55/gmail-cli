@@ -88,7 +88,8 @@ class EmailDBHelper:
 
             try:
                 server_timezone = pytz.timezone(TIME_ZONE)
-                date_obj = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
+                date_obj = datetime.strptime(
+                    date_str, "%a, %d %b %Y %H:%M:%S %z")
 
                 email_list.append({
                     "message_id": email[0],
