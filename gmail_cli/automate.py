@@ -1,4 +1,5 @@
 import pytz
+import re
 
 from datetime import datetime, timedelta
 
@@ -10,6 +11,9 @@ from settings import TIME_ZONE
 
 
 class EmailAutomation:
+    '''
+    Email automation class to automate the email processing.
+    '''
     def __init__(
         self,
         schema_path,
@@ -25,6 +29,8 @@ class EmailAutomation:
     def retrieve_emails(self, force=False):
         '''
         Fetch emails from Gmail and insert them into the database.
+        Args:
+            force (bool): If True, fetch emails from Gmail and insert them into the database.
         '''
         if force:
             emails = self.gmail_client.fetch_emails()
@@ -32,12 +38,14 @@ class EmailAutomation:
 
         return self.db_helper.fetch_emails_from_table()
 
-    def run(self, force=False):
+    def run(self, force_retrieve=False):
         '''
         Start the email automation process.
+        Args:
+            force_retrieve (bool): If True, fetch emails from Gmail and insert them into the database.
         '''
         rules = self.schema.validate()
-        emails = self.retrieve_emails(force=force)
+        emails = self.retrieve_emails(force=force_retrieve)
         for rule in rules:
             self.apply_rule(rule, emails)
 
@@ -86,18 +94,30 @@ class EmailAutomation:
         '''
         Match a single condition with the email.
         '''
-
         field = condition['field']
         value = condition['value']
         operator = condition['operator']
         field_value = email[field]
 
-        if field in ['to', 'from', 'subject']:
+        if field in ('to', 'from'):
+            return self.match_email_type(field_value, operator, value)
+        elif field == 'subject':
             return self.match_string_type(field_value, operator, value)
         elif field == 'date_received':
             return self.match_datetime_type(field_value, operator, value)
         else:
             raise ValueError('Invalid field')
+
+    def match_email_type(self, field_value, operator, value):
+        '''
+        Match to condition with the email.
+        '''
+        email_address = ''
+        match = re.search(r'<([^>]+)>', field_value)
+
+        if match:
+            email_address = match.group(1)
+        return self.match_string_type(email_address, operator, value)
 
     def match_string_type(self, field_value: str, operator: str, value: str) -> bool:
         '''
@@ -131,16 +151,22 @@ class EmailAutomation:
             raise ValueError('Invalid operator')
 
     def perform_actions(self, email, actions):
+        '''
+        Perform actions on the email.
+        '''
         for action in actions:
             self.perform_action(email, action)
 
     def perform_action(self, email, action):
-        action_type = action['type']
+        '''
+        Perform a single action on the email.
+        '''
+        action_type = action['action']
         if action_type == 'mark_as_read':
             self.gmail_client.mark_as_read(email['message_id'])
         elif action_type == 'mark_as_unread':
             self.gmail_client.mark_as_unread(email['message_id'])
-        elif action_type == 'move_to_folder':
+        elif action_type == 'move_to_mailbox':
             self.gmail_client.move_to_mailbox(email['message_id'], action['mailbox'])
         else:
             raise ValueError('Invalid action type')

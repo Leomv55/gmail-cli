@@ -35,6 +35,10 @@ EMAIL_QUERIES = {
 
 
 class EmailDBHelper:
+    ''''
+    Email database helper class to interact
+    with the SQLite database.
+    '''
     def __init__(self, db_path='', table_name='') -> None:
         self.db_path = db_path or EMAILS_DB_PATH
         self.table_name = table_name or EMAIL_TABLE_NAME
@@ -90,7 +94,7 @@ class EmailDBHelper:
                     "message_id": email[0],
                     "subject": email[1],
                     "snippet": email[2],
-                    "date": date_obj.astimezone(server_timezone).strftime("%Y-%m-%d %H:%M:%S"),
+                    "date": date_obj.astimezone(server_timezone),
                     "to": email[4],
                     "from": email[5]
                 })

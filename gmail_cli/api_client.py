@@ -9,6 +9,9 @@ from .exceptions import CredentialsFileNotFound
 
 
 class GmailClient:
+    '''
+    A client to interact with the Gmail API.
+    '''
     def __init__(self, credential_file_path='', token_file_path=''):
         self.credential_file_path = credential_file_path or CREDENTIALS_FILE_PATH
         self.token_file_path = token_file_path or TOKEN_FILE_PATH
@@ -94,6 +97,20 @@ class GmailClient:
             print(e)
             return []
 
+    def list_mailboxes(self):
+        '''
+        List all the mailboxes in the user's Gmail account.
+        '''
+        service = self.get_service()
+        try:
+            response = service.users().labels().list(userId='me').execute()
+            labels = response.get('labels', [])
+            return labels
+        except Exception as e:
+            print(f'An error occurred while listing mailboxes: {str(e)}')
+            print(e)
+            return []
+
     def mark_as_read(self, message_id):
         '''
         Mark an email as read.
@@ -134,12 +151,20 @@ class GmailClient:
         '''
         Move an email to a specific mailbox.
         '''
+        labels = self.list_mailboxes()
+        for label in labels:
+            if label['name'] == mailbox:
+                mailbox_id = label['id']
+                break
+        else:
+            raise ValueError(f'Mailbox "{mailbox}" not found')
+
         service = self.get_service()
         try:
             service.users().messages().modify(
                 userId='me',
                 id=message_id,
-                body={'addLabelIds': [mailbox]}
+                body={'addLabelIds': [mailbox_id]}
             ).execute()
         except Exception as e:
             print(f'An error occurred while moving email to mailbox: {str(e)}')

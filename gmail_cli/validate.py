@@ -162,23 +162,23 @@ class AutomationSchemaValidation:
             'move_to_mailbox'
         ]:
             raise ValidationError(
-                f'Invalid action type: {action}', action_type)
+                f'Invalid action type: {action_type}', action)
 
         return action
 
     def validate_action(self, action: dict):
         validated_action = self._validate_action(action)
-        action = validated_action['action']
+        action_type = validated_action['action']
 
-        if action == 'mark_as_read':
+        if action_type == 'mark_as_read':
             self._validate_mark_as_read(validated_action)
-        elif action == 'mark_as_unread':
+        elif action_type == 'mark_as_unread':
             self._validate_mark_as_unread(validated_action)
-        elif action == 'move_to_mailbox':
+        elif action_type == 'move_to_mailbox':
             self._validate_move_to_mailbox(validated_action)
         else:
             raise ValidationError(
-                f'Invalid action: {action}', action)
+                f'Invalid action: {action_type}', action)
 
         return action
 
