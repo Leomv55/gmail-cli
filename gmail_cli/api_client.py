@@ -4,7 +4,7 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
 
-from settings import CREDENTIALS_FILE_PATH, TOKEN_FILE_PATH, GMAIL_SCOPES
+from .settings import CREDENTIALS_FILE_PATH, TOKEN_FILE_PATH, GMAIL_SCOPES
 from .exceptions import CredentialsFileNotFound
 
 

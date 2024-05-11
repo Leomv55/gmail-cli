@@ -3,7 +3,7 @@ import pytz
 
 from datetime import datetime
 
-from settings import EMAILS_DB_PATH, EMAIL_TABLE_NAME, TIME_ZONE
+from .settings import EMAILS_DB_PATH, EMAIL_TABLE_NAME, TIME_ZONE
 
 CREATE_EMAIL_TABLE = '''CREATE TABLE IF NOT EXISTS {email_table_name} (
     message_id TEXT PRIMARY KEY,

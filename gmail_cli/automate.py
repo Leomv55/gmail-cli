@@ -6,8 +6,7 @@ from datetime import datetime, timedelta
 from .db_helper import EmailDBHelper
 from .api_client import GmailClient
 from .validate import AutomationSchemaValidation
-
-from settings import TIME_ZONE
+from .settings import TIME_ZONE
 
 
 class EmailAutomation:
