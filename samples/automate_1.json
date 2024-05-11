@@ -1,7 +1,7 @@
 [
     {
         "name": "Rule 1",
-        "description": "Rule 1 description",
+        "description": "Move all emails with subject containing 'your code always' to movies mailbox and mark as read",
         "predicate": "all",
         "conditions": [
             {
@@ -17,6 +17,81 @@
             {
                 "action": "move_to_mailbox",
                 "mailbox": "movies"
+            }
+        ]
+    },
+    {
+        "name": "Rule 2",
+        "description": "Mark all emails from abc@abc.com as unread",
+        "predicate": "any",
+        "conditions": [
+            {
+                "field": "from",
+                "operator": "eq",
+                "value": "abc@abc.com"
+            }
+        ],
+        "actions": [
+            {
+                "action": "mark_as_unread"
+            }
+        ]
+    },
+    {
+        "name": "Rule 3",
+        "description": "Move all emails with subject containing 'Refer' or recipient as abc@abc.com to refer mailbox ",
+        "predicate": "any",
+        "conditions": [
+            {
+                "field": "subject",
+                "operator": "contains",
+                "value": "Refer"
+            },
+            {
+                "field": "to",
+                "operator": "eq",
+                "value": "abc@abc.com"
+            }
+        ],
+        "actions": [
+            {
+                "action": "move_to_mailbox",
+                "mailbox": "refer"
+            }
+        ]
+    },
+    {
+        "name": "Rule 4",
+        "description": "Mark all emails received in last 2 days as read",
+        "predicate": "any",
+        "conditions": [
+            {
+                "field": "date_received",
+                "operator": "lt",
+                "value": 2
+            }
+        ],
+        "actions": [
+            {
+                "action": "mark_as_read"
+            }
+        ]
+    },
+    {
+        "name": "Rule 5",
+        "description": "Mark all emails received before 2 days to archive mailbox",
+        "predicate": "any",
+        "conditions": [
+            {
+                "field": "date_received",
+                "operator": "gt",
+                "value": 2
+            }
+        ],
+        "actions": [
+            {
+                "action": "move_to_mailbox",
+                "mailbox": "archive"
             }
         ]
     }
