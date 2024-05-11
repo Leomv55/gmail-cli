@@ -7,25 +7,27 @@ from .exceptions import ValidationError
 
 class AutomationSchemaValidation:
     def __init__(self, schema_path):
-        self.schema_path = schema_path
+        self.schema = self.read_schema(schema_path)
 
-    def read_schema(self):
+    def read_schema(self, schema_path):
         try:
-            with open(self.schema_path, 'r') as f:
+            with open(schema_path, 'r') as f:
                 return json.load(f)
         except FileNotFoundError:
             raise ValidationError(
-                'Schema file not found', self.schema_path)
+                'Schema file not found', schema_path)
         except json.JSONDecodeError:
             raise ValidationError(
-                'Invalid JSON in schema file', self.schema_path)
+                'Invalid JSON in schema file', schema_path)
 
     def validate(self):
-        schema = self.read_schema()
-        self.validate_schema(schema)
-        return schema
+        return self.validate_schema(self.schema)
 
     def validate_schema(self, rules: list) -> list:
+        if not isinstance(rules, list):
+            raise ValidationError(
+                'Schema must be a list', rules)
+
         for rule in rules:
             self.validate_rule(rule)
         return rules
@@ -41,19 +43,37 @@ class AutomationSchemaValidation:
             raise ValidationError(
                 'Rule description is required in rule', rule)
 
+        predicate = rule.get('predicate', '')
+        if not predicate:
+            raise ValidationError(
+                'Rule predicate is required in rule', rule)
+
+        if predicate not in ['all', 'any']:
+            raise ValidationError(
+                f'Invalid predicate: {predicate}', rule)
+
         conditions = rule.get('conditions', [])
         if not conditions:
             raise ValidationError(
                 'Rule conditions are required in rule', rule)
+
+        if not isinstance(conditions, list):
+            raise ValidationError(
+                'Conditions must be a list', conditions)
 
         actions = rule.get('actions', [])
         if not actions:
             raise ValidationError(
                 'Rule actions are required in rule', rule)
 
+        if not isinstance(actions, list):
+            raise ValidationError(
+                'Actions must be a list', actions)
+
         return {
             "name": name,
             "description": description,
+            "predicate": predicate,
             "conditions": conditions,
             "actions": actions
         }
@@ -64,10 +84,18 @@ class AutomationSchemaValidation:
         self.validate_actions(validated_rule['actions'])
 
     def validate_conditions(self, conditions: list):
+        if not isinstance(conditions, list):
+            raise ValidationError(
+                'Conditions must be a list', conditions)
+
         for condition in conditions:
             self.validate_condition(condition)
 
     def _validate_condition(self, condition: dict) -> dict:
+        if not isinstance(condition, dict):
+            raise ValidationError(
+                'Condition must be a dictionary', condition)
+
         field = condition.get('field', '')
         if not field:
             raise ValidationError(
@@ -135,7 +163,7 @@ class AutomationSchemaValidation:
                 raise ValidationError(
                     'Value must be a string', condition)
 
-            allowed_formats = ['%Y-%m-%d', '%Y-%m-%d %H:%M:%S']
+            allowed_formats = ['%d-%m-%Y', '%d-%m-%Y %H:%M:%S']
             for format in allowed_formats:
                 try:
                     datetime.strptime(value, format)

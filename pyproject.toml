@@ -21,3 +21,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 gmailcli = "gmail_cli.cli:main"
+test = "tests:main"
