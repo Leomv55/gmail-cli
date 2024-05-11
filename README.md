@@ -50,6 +50,12 @@ The `automate` command is used to apply automation rules to process emails in th
 ```bash
 gmailcli automate [schema] [options]
 ```
+#### Environment Variables:
+- `EMAILS_DB_PATH`: Path to the database file. default: `emails.db`
+- `EMAIL_TABLE_NAME`: Name of the table in the database. default: `emails`
+- `CREDENTIALS_FILE_PATH`: Path to the credentials file. default: `credentials.json`
+- `TOKEN_FILE_PATH`: Path to the token file. default: `token.json`
+- `TIME_ZONE` : Time zone to be used for the timestamps in the database. default: `Asia/Kolkata`
 
 ### Arguments:
 - `schema`: Path to the schema file.
@@ -66,12 +72,14 @@ Here is an example of how to use the `gmailcli` package to list all emails in th
 ### List Emails
 To list all emails in the Gmail inbox, you can use the following command:
 
-Fetches emails from DB and displays them in the terminal.
+- Fetches emails from DB and displays them in the terminal.
+
 ```bash 
 gmailcli list
 ```
 
-Fetches emails from Gmail and stores them in the DB. Also displays them in the terminal.
+- Fetches emails from Gmail and stores them in the DB. Also displays them in the terminal.
+
 ```bash
 gmailcli list  --force-retrieve
 ```
@@ -80,17 +88,16 @@ gmailcli list  --force-retrieve
 gmailcli list --db-path my_database.db --table-name emails --credentials-file-path credentials.json --token-file-path token.json --write-to-csv-path emails.csv
 ```
 
-The optional `--write-to-csv-path` flag can be used to write the emails to a CSV file.
 
 ### Automate Emails
 To apply automation rules to process emails in the Gmail inbox, you can use the following command:
 
-Apply automation rules to process emails which are already in the DB.
+- Apply automation rules to process emails which are already in the DB.
 ```bash
 gmailcli automate rules.json
 ```
 
-Apply automation rules to process emails which are fetched from Gmail.
+- Apply automation rules to process emails which are fetched from Gmail.
 ```bash
 gmailcli automate rules.json --db-path my_database.db --table-name emails --credentials-file-path credentials.json --token-file-path token.json --force-retrieve
 
@@ -113,7 +120,7 @@ The `rules.json` file contains the automation rules to be applied to the emails.
         "actions": [
             {
                 "action": "mark_as_read"
-            },
+            }
         ]
 }
 ```
