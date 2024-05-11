@@ -113,11 +113,12 @@ class EmailAutomation:
         '''
         Match to condition with the email.
         '''
-        email_address = ''
-        match = re.search(r'<([^>]+)>', field_value)
+        pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        match = re.search(pattern, field_value)
+        if not match:
+            return False
 
-        if match:
-            email_address = match.group(1)
+        email_address = match.group()
         return self.match_string_type(email_address, operator, value)
 
     def match_string_type(
@@ -144,28 +145,36 @@ class EmailAutomation:
         self,
         field_value: datetime,
         operator: str,
-        value: datetime
+        value
     ) -> bool:
         '''
         Match datetime type condition with the email.
         '''
         server_timezone = pytz.timezone(TIME_ZONE)
         if operator == 'eq':
-            return field_value.date() == value.date()
+            try:
+                dt_obj = datetime.strptime(value, "%d-%m-%Y")
+            except ValueError:
+                dt_obj = datetime.strptime(value, "%d-%m-%Y %H:%M:%S")
+            return field_value.date() == dt_obj.date()
         elif operator == 'neq':
-            return field_value.date() != value.date()
-        elif operator == 'gt':
-            request_date = (
-                datetime.now().astimezone(server_timezone) -
-                timedelta(days=value)
-            )
-            return field_value > request_date
-        elif operator == 'lt':
+            try:
+                dt_obj = datetime.strptime(value, "%d-%m-%Y")
+            except ValueError:
+                dt_obj = datetime.strptime(value, "%d-%m-%Y %H:%M:%S")
+            return field_value.date() != dt_obj.date()
+        elif operator == 'gt':  # Received more than 2 days ago
             request_date = (
                 datetime.now().astimezone(server_timezone) -
                 timedelta(days=value)
             )
             return field_value < request_date
+        elif operator == 'lt':  # Received 2 days ago
+            request_date = (
+                datetime.now().astimezone(server_timezone) -
+                timedelta(days=value)
+            )
+            return field_value >= request_date
         else:
             raise ValueError('Invalid operator')
 
