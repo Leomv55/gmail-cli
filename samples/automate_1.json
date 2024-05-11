@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Rule 1",
+        "description": "Rule 1 description",
+        "predicate": "all",
+        "conditions": [
+            {
+                "field": "subject",
+                "operator": "contains",
+                "value": "your code always"
+            }
+        ],
+        "actions": [
+            {
+                "action": "mark_as_read"
+            },
+            {
+                "action": "move_to_mailbox",
+                "mailbox": "movies"
+            }
+        ]
+    }
+]
