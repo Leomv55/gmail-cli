@@ -4,6 +4,7 @@ import pytz
 from datetime import datetime
 
 from .settings import EMAILS_DB_PATH, EMAIL_TABLE_NAME, TIME_ZONE
+from .exceptions import DoesNotExist
 
 CREATE_EMAIL_TABLE = '''CREATE TABLE IF NOT EXISTS {email_table_name} (
     message_id TEXT PRIMARY KEY,
@@ -25,12 +26,14 @@ INSERT_EMAILS = '''INSERT OR IGNORE INTO {email_table_name} (
 
 SELECT_EMAILS = '''SELECT * FROM {email_table_name}'''
 SELECT_EMAILS_BY_ID = 'SELECT * FROM {email_table_name} WHERE message_id = ?'
+DROP_EMAIL_TABLE = 'DROP TABLE IF EXISTS {email_table_name}'
 
 EMAIL_QUERIES = {
     "CREATE_EMAIL_TABLE": CREATE_EMAIL_TABLE,
     "INSERT_EMAILS": INSERT_EMAILS,
     "SELECT_EMAILS": SELECT_EMAILS,
-    "SELECT_EMAILS_BY_ID": SELECT_EMAILS_BY_ID
+    "SELECT_EMAILS_BY_ID": SELECT_EMAILS_BY_ID,
+    "DROP_EMAIL_TABLE": DROP_EMAIL_TABLE
 }
 
 
@@ -46,19 +49,36 @@ class EmailDBHelper:
     def get_db_instance(self):
         return sqlite3.connect(self.db_path)
 
-    def create_emails_table(self):
+    def create_emails_table(self, remove_existing=False):
         conn = self.get_db_instance()
         cursor = conn.cursor()
+
+        if remove_existing:
+            cursor.execute(EMAIL_QUERIES['DROP_EMAIL_TABLE'].format(
+                email_table_name=self.table_name))
+            conn.commit()
+
         cursor.execute(EMAIL_QUERIES['CREATE_EMAIL_TABLE'].format(
             email_table_name=self.table_name))
         conn.commit()
+
+        # Fetch table structure
+        cursor.execute("PRAGMA table_info({})".format(self.table_name))
+        table_structure = cursor.fetchall()
         conn.close()
+        return table_structure
+
+    def _validate_date(self, date_str):
+        date_obj = datetime.strptime(
+            date_str, "%a, %d %b %Y %H:%M:%S %z")
+        return date_obj
 
     def insert_emails_into_table(self, email_data):
         self.create_emails_table()
         conn = self.get_db_instance()
         cursor = conn.cursor()
         for email in email_data:
+            self._validate_date(email['date'])
             cursor.execute(EMAIL_QUERIES['INSERT_EMAILS'].format(
                 email_table_name=self.table_name), (
                 email['message_id'],
@@ -113,5 +133,19 @@ class EmailDBHelper:
         cursor.execute(EMAIL_QUERIES['SELECT_EMAILS_BY_ID'].format(
             email_table_name=self.table_name), (message_id,))
         email = cursor.fetchone()
+
+        if not email:
+            raise DoesNotExist(
+                f'Email with pk {message_id} does not exist.')
+
         conn.close()
-        return email
+
+        date_obj = self._validate_date(email[3])
+        return {
+            "message_id": email[0],
+            "subject": email[1],
+            "snippet": email[2],
+            "date": date_obj.astimezone(pytz.timezone(TIME_ZONE)),
+            "to": email[4],
+            "from": email[5]
+        }
