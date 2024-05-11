@@ -10,8 +10,7 @@ from .exceptions import CredentialsFileNotFound
 
 class GmailClient:
     def __init__(self, credential_file_path='', token_file_path=''):
-        self.credential_file_path = (credential_file_path or
-                                     CREDENTIALS_FILE_PATH)
+        self.credential_file_path = credential_file_path or CREDENTIALS_FILE_PATH
         self.token_file_path = token_file_path or TOKEN_FILE_PATH
 
     def authenticate(self):
@@ -63,7 +62,7 @@ class GmailClient:
         service = self.get_service()
 
         try:
-            response = service.users().messages().list(userId='me', labelIds=['INBOX']).execute()
+            response = service.users().messages().list(userId='me').execute()
             messages = response.get('messages', [])
 
             emails = []
@@ -74,6 +73,8 @@ class GmailClient:
                 headers = payload.get('headers', [])
                 subject = next((header['value'] for header in headers if header['name'] == 'Subject'), None)
                 date = next((header['value'] for header in headers if header['name'] == 'Date'), None)
+                sender = next((header['value'] for header in headers if header['name'] == 'From'), None)
+                recipient = next((header['value'] for header in headers if header['name'] == 'To'), None)
                 snippet = msg.get('snippet', '')
 
                 email_info = {
@@ -81,6 +82,8 @@ class GmailClient:
                     'subject': subject,
                     'snippet': snippet,
                     'date': date,
+                    'from': sender,
+                    'to': recipient
                 }
                 emails.append(email_info)
 
@@ -88,4 +91,59 @@ class GmailClient:
 
         except Exception as e:
             print(f'An error occurred while fetching emails: {str(e)}')
+            print(e)
             return []
+
+    def mark_as_read(self, message_id):
+        '''
+        Mark an email as read.
+        '''
+        service = self.get_service()
+        try:
+            service.users().messages().modify(
+                userId='me',
+                id=message_id,
+                body={'removeLabelIds': ['UNREAD']}
+            ).execute()
+        except Exception as e:
+            print(f'An error occurred while marking email as read: {str(e)}')
+            print(e)
+            return False
+
+        return True
+
+    def mark_as_unread(self, message_id):
+        '''
+        Mark an email as unread.
+        '''
+        service = self.get_service()
+        try:
+            service.users().messages().modify(
+                userId='me',
+                id=message_id,
+                body={'addLabelIds': ['UNREAD']}
+            ).execute()
+        except Exception as e:
+            print(f'An error occurred while marking email as unread: {str(e)}')
+            print(e)
+            return False
+
+        return True
+
+    def move_to_mailbox(self, message_id, mailbox):
+        '''
+        Move an email to a specific mailbox.
+        '''
+        service = self.get_service()
+        try:
+            service.users().messages().modify(
+                userId='me',
+                id=message_id,
+                body={'addLabelIds': [mailbox]}
+            ).execute()
+        except Exception as e:
+            print(f'An error occurred while moving email to mailbox: {str(e)}')
+            print(e)
+            return False
+
+        return True

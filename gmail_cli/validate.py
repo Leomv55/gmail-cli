@@ -19,13 +19,11 @@ class AutomationSchemaValidation:
         except json.JSONDecodeError:
             raise ValidationError(
                 'Invalid JSON in schema file', self.schema_path)
-        except Exception as e:
-            raise ValidationError(
-                'An error occurred while reading schema file', e)
 
     def validate(self):
         schema = self.read_schema()
         self.validate_schema(schema)
+        return schema
 
     def validate_schema(self, rules: list) -> list:
         for rule in rules:
@@ -70,11 +68,6 @@ class AutomationSchemaValidation:
             self.validate_condition(condition)
 
     def _validate_condition(self, condition: dict) -> dict:
-        condition_type = condition.get('type', '')
-        if not condition_type:
-            raise ValidationError(
-                'Condition type is required', condition)
-
         field = condition.get('field', '')
         if not field:
             raise ValidationError(
@@ -95,7 +88,6 @@ class AutomationSchemaValidation:
                 'Value is required in condition', condition)
 
         return {
-            "type": condition_type,
             "field": field,
             "operator": operator,
             "value": value
@@ -159,14 +151,18 @@ class AutomationSchemaValidation:
             self.validate_action(action)
 
     def _validate_action(self, action: dict):
-        action_type = action.get('type', '')
+        action_type = action.get('action', '')
         if not action_type:
             raise ValidationError(
                 'Action type is required', action)
 
-        if action_type not in ['forward', 'archive', 'trash']:
+        if action_type not in [
+            'mark_as_read',
+            'mark_as_unread',
+            'move_to_mailbox'
+        ]:
             raise ValidationError(
-                f'Invalid action type: {action_type}', action)
+                f'Invalid action type: {action}', action_type)
 
         return action
 
@@ -178,8 +174,8 @@ class AutomationSchemaValidation:
             self._validate_mark_as_read(validated_action)
         elif action == 'mark_as_unread':
             self._validate_mark_as_unread(validated_action)
-        elif action == 'move_to':
-            self._validate_move_to(validated_action)
+        elif action == 'move_to_mailbox':
+            self._validate_move_to_mailbox(validated_action)
         else:
             raise ValidationError(
                 f'Invalid action: {action}', action)
@@ -192,7 +188,7 @@ class AutomationSchemaValidation:
     def _validate_mark_as_unread(self, action: dict):
         pass  # No validation required
 
-    def _validate_move_to(self, action: dict):
+    def _validate_move_to_mailbox(self, action: dict):
         mailbox = action.get('mailbox', '')
         if not mailbox:
             raise ValidationError(

@@ -1,9 +1,9 @@
-from gmail_cli.api_client import GmailClient
+from gmail_cli.automate import EmailAutomation
 
 
 def main():
-    client = GmailClient()
-    client.fetch_emails()
+    automation = EmailAutomation(schema_path='automate.json')
+    automation.run()
 
 
 if __name__ == "__main__":
