@@ -61,56 +61,80 @@ class GmailClient:
         credentials = self.authenticate()
         return build('gmail', 'v1', credentials=credentials)
 
-    def fetch_emails(self):
+    def get_emails_from_messages(self, messages):
         '''
-        Fetch the most recent emails from the user's Gmail inbox.
+        Get email information from messages.
         '''
         service = self.get_service()
+        emails = []
+        for message in messages:
+            message_id = message['id']
+            msg = service.users().messages().get(
+                userId='me',
+                id=message_id
+            ).execute()
+            payload = msg['payload']
+            headers = payload.get('headers', [])
+            subject = next(
+                (
+                    header['value'] for header in headers
+                    if header['name'] == 'Subject'
+                ), None)
+            date = next(
+                (
+                    header['value'] for header in headers
+                    if header['name'] == 'Date'
+                ), None)
+            sender = next(
+                (
+                    header['value'] for header in headers
+                    if header['name'] == 'From'
+                ), None)
+            recipient = next(
+                (
+                    header['value'] for header in headers
+                    if header['name'] == 'To'
+                ), None)
+            snippet = msg.get('snippet', '')
 
+            email_info = {
+                'message_id': message_id,
+                'subject': subject,
+                'snippet': snippet,
+                'date': date,
+                'from': sender,
+                'to': recipient
+            }
+            emails.append(email_info)
+        return emails
+
+    def fetch_emails(self, max_results=511):
+        '''
+        Fetch the all email from the user's Gmail inbox.
+        '''
+        service = self.get_service()
         try:
-            response = service.users().messages().list(userId='me').execute()
+            response = service.users().messages().list(
+                userId='me', maxResults=max_results).execute()
             messages = response.get('messages', [])
+            emails = self.get_emails_from_messages(messages)
+            pageToken = None
+            if 'nextPageToken' in response:
+                pageToken = response['nextPageToken']
 
-            emails = []
-            for message in messages:
-                message_id = message['id']
-                msg = service.users().messages().get(
+            while pageToken:
+                response = service.users().messages().list(
                     userId='me',
-                    id=message_id
+                    maxResults=max_results,
+                    pageToken=pageToken
                 ).execute()
-                payload = msg['payload']
-                headers = payload.get('headers', [])
-                subject = next(
-                    (
-                        header['value'] for header in headers
-                        if header['name'] == 'Subject'
-                    ), None)
-                date = next(
-                    (
-                        header['value'] for header in headers
-                        if header['name'] == 'Date'
-                    ), None)
-                sender = next(
-                    (
-                        header['value'] for header in headers
-                        if header['name'] == 'From'
-                    ), None)
-                recipient = next(
-                    (
-                        header['value'] for header in headers
-                        if header['name'] == 'To'
-                    ), None)
-                snippet = msg.get('snippet', '')
+                messages = response.get('messages', [])
+                emails.extend(self.get_emails_from_messages(messages))
 
-                email_info = {
-                    'message_id': message_id,
-                    'subject': subject,
-                    'snippet': snippet,
-                    'date': date,
-                    'from': sender,
-                    'to': recipient
-                }
-                emails.append(email_info)
+                if 'nextPageToken' in response:
+                    pageToken = response['nextPageToken']
+                else:
+                    break
 
             return emails
 
