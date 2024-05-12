@@ -132,3 +132,5 @@ Contributions are welcome! Please feel free to submit any issues or pull request
 ## License
 This project is licensed under the MIT License
 
+## Demo
+Link : [Gmail CLI Demo](https://drive.google.com/file/d/1CCYXdm4LbUe3OPhfyY_SdpAZjnrrRlD0/view)
