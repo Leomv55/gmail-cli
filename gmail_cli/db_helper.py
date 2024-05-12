@@ -69,6 +69,10 @@ class EmailDBHelper:
         return table_structure
 
     def _validate_date(self, date_str):
+        date_str = date_str.split('(')[0].strip()
+        if not date_str:
+            raise ValueError('Invalid date')
+
         date_obj = datetime.strptime(
             date_str, "%a, %d %b %Y %H:%M:%S %z")
         return date_obj
@@ -78,7 +82,11 @@ class EmailDBHelper:
         conn = self.get_db_instance()
         cursor = conn.cursor()
         for email in email_data:
-            self._validate_date(email['date'])
+            try:
+                self._validate_date(email['date'])
+            except ValueError:
+                continue
+
             cursor.execute(EMAIL_QUERIES['INSERT_EMAILS'].format(
                 email_table_name=self.table_name), (
                 email['message_id'],
